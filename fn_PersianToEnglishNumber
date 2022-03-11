@@ -1,0 +1,43 @@
+let
+    fn_PersianToEnglishNumber =
+  /************************Function body************************/
+(input as text) as text =>
+let
+    Translation = List.Buffer(List.Zip(
+                {List.Transform(
+                    {1776..1785,1644,1632..1641},
+                    each Character.FromNumber(_)),
+                List.Transform(
+                    {48..57,44,48..57},
+                    each Character.FromNumber(_))})),
+    Output=List.Accumulate(Translation,input,(x,y)=>Text.Replace(x,y{0},y{1}))
+
+in
+    Output,
+  /************************Function Documentation************************/
+    
+ FunctionType = type function
+        (
+            Persian_Number as 
+            (type text meta
+                [
+                Documentation.FieldCaption = "Text Including Persian Number متن حاوی عدد فارسی",
+                Documentation.FieldDescription = "Accepting text including persian numbers or persian number as text. این فانکشن یک متن حاوی عدد فارسی یا عدد فارسی را با فرمت تکست میپذیرد",
+                Documentation.SampleValues = {"۱۲۳فاکتور"}
+                ]
+            )
+        ) as number 
+        meta
+        [
+            Documentation.Name = "fn_PersianToEnglishNumber",
+            Documentation.Description = "Converts persian numbers to english numbers.این فانکشن اعداد فارسی را به معادل انگلیسی آنها تبدیل میکند ",
+            Documentation.Version = " 1.0 ",
+            Documentation.Category = " Text ",
+            Documentation.Author = " Mahmoud Bani Asadi ",
+            Documentation.Source = " https://www.arshad-hesabdar.ir ",
+            Documentation.Examples = {[Description =  " see this blogpost: https://www.biinsight.com/using-unicode-characters-in-power-bi/#comment-15166 ",
+        Code = " fn_PersianToEnglishNumber(""۱۲۳فاکتور"")",
+        Result = " ""123فاکتور"" "]}       
+        ]
+in
+    Value.ReplaceType(fn_PersianToEnglishNumber, FunctionType)
