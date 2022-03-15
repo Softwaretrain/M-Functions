@@ -1,0 +1,67 @@
+let fn_CreateDateTable = (Start as date, optional End as date, optional Culture as nullable text) as table =>
+    let
+        Culture=if Culture=null then "fa-IR" else Culture,
+        StartDate= Date.FromText(Date.ToText(Start,"yyy/MM/dd","en-EN"),Culture),
+        EndDate= if End=null then Date.FromText(Date.ToText(DateTime.Date(DateTime.LocalNow()),"yyy/MM/dd","en-EN"),Culture) else Date.FromText(Date.ToText(End,"yyy/MM/dd","en-EN"),Culture),
+        DayCount = Duration.Days(Duration.From(EndDate - StartDate))+1,
+        Source = List.Dates(StartDate,DayCount,#duration(1,0,0,0)),
+        TableFromList = Table.FromList(Source, Splitter.SplitByNothing()),
+        ChangedType = Table.TransformColumnTypes(TableFromList,{{"Column1", type date}}),
+        RenamedColumns = Table.RenameColumns(ChangedType,{{"Column1", "Date"}}),
+        InsertLocalDate = Table.AddColumn(RenamedColumns, "LocalDate", each Date.ToText([Date],"yyy/MM/dd",Culture)),
+        DateNumber = Table.AddColumn(InsertLocalDate, "DateNumber", each Text.Remove([LocalDate],{"-","/"})),
+        #"YYY/MM" = Table.AddColumn(DateNumber, "YYY/MM", each Text.Start([LocalDate],7),type text),
+        InsertYear = Table.AddColumn(#"YYY/MM", "Year", each Number.FromText(Date.ToText([Date],"yyy",Culture))),
+        InsertQuarter = Table.AddColumn(InsertYear, "QuarterOfYear", each Number.RoundUp(Number.FromText( Date.ToText([Date],"MM",Culture))/3,0)),
+        InsertMonth = Table.AddColumn(InsertQuarter, "MonthOfYear", each Number.FromText(Date.ToText([Date],"MM",Culture))),
+        InsertDay = Table.AddColumn(InsertMonth, "DayOfMonth", each Number.FromText(Date.ToText([Date],"dd",Culture))),
+        InsertMonthName = Table.AddColumn(InsertDay, "MonthName", each Date.ToText([Date], "MMMM", Culture), type text),
+        InsertCalendarMonth = Table.AddColumn(InsertMonthName, "MonthInCalendar", each Date.ToText([Date],"MMM",Culture)&" "&Date.ToText([Date],"yyy",Culture)),
+        InsertCalendarQtr = Table.AddColumn(InsertCalendarMonth, "QuarterInCalendar", each "Q" & Number.ToText([QuarterOfYear]) & "-" & Number.ToText([Year])),
+        InsertDayWeek = Table.AddColumn(InsertCalendarQtr, "DayInWeek", each (Date.DayOfWeek([Date],Day.Saturday)+1)),
+        InsertDayName = Table.AddColumn(InsertDayWeek, "DayOfWeekName", each Date.ToText([Date], "dddd", Culture), type text),
+        DayofYear = Table.AddColumn(InsertDayName, "ShamsiDayOfYear", each if Date.DayOfYear([Date])>=80 then Date.DayOfYear([Date])-79 else Date.DayOfYear([Date])+286,Int64.Type),
+        InsertWeekEnding = Table.AddColumn(DayofYear, "WeekEnding", each Date.ToText(Date.EndOfWeek([Date],Day.Saturday),"yyy/MM/dd",Culture))
+    in
+        InsertWeekEnding,
+FunctionType = type function
+        (
+            Start as 
+            (type date meta
+                [
+                Documentation.FieldCaption = "Starting local date",
+                Documentation.FieldDescription = "Put a date based on culture in third field, Persian date is default",
+                Documentation.SampleValues = {"1367/01/25"}
+                ]
+            ),
+            optional End as 
+            (type date meta
+                [
+                Documentation.FieldCaption = "Ending local date",
+                Documentation.FieldDescription = "Put a date based on culture in third field, Persian date is default and if skip blank, Current Persian date is default",
+                Documentation.SampleValues = {"1400/01/01"}
+                ]
+            ),
+            optional Culture as 
+            (type text meta
+                [
+                Documentation.FieldCaption = "Region code to create dimDate",
+                Documentation.FieldDescription = "Put a region code like ""fa-IR"" as text",
+                Documentation.SampleValues = {"fa-IR"}
+                ]
+            )
+        ) as table 
+        meta
+        [
+            Documentation.Name = "fn_CreateDateTable",
+            Documentation.Description = "Create dimDate table for local date - default is Persian ",
+            Documentation.Version = " 1.0 ",
+            Documentation.Category = " Table ",
+            Documentation.Author = " Mahmoud Bani Asadi ",
+            Documentation.Source = " https://www.arshad-hesabdar.ir ",
+            Documentation.Examples = {[Description =  " see this blog post: https://www.vahiddm.com/post/shamsi-date-table-powerbi",
+        Code = " fn_CreateDateTable(""1367/01/25"",""1401/01/01"",""fa-IR"")",
+        Result = " DimDateTable "]}       
+        ]
+in
+    Value.ReplaceType(fn_CreateDateTable, FunctionType)
