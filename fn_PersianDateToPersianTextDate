@@ -1,0 +1,58 @@
+let
+    fn_PersianDateToPersianTextDate =
+(PersianDate as text)=>
+let
+    DateToText=PersianDate,
+    year=Text.Start(DateToText,Text.PositionOf(DateToText,"/")),
+    month=Text.Middle(DateToText,Text.PositionOf(DateToText,"/")+1,2),
+    day=Text.End(DateToText,2),
+    m={"فروردین","اردیبهشت","خرداد","تیر","مرداد","شهریور","مهر","آبان","آذر","دی","بهمن","اسفند"},
+
+    tt=(NumberToText as text)=>
+        let
+            a=Text.PadStart(NumberToText,4,"0"),
+            a1=Number.FromText(a),
+            b={"ده","یازده","دوازده","سیزده","چهارده","پانزده","شانزده","هفده","هجده","نوزده"},
+            c={"","یک","دو","سه","چهار","پنج","شش","هفت","هشت","نه"},
+            d={"","صد","دویست","سیصد","چهارصد","پانصد","ششصد","هفتصد","هشتصد","نهصد"},
+            e={"","","بیست","سی","چهل","پنجاه","شصت","هفتاد","هشتاد","نود"},
+            h=if Number.FromText(Text.Middle(a,0,1))=0 then "" else if Number.FromText(Text.End(a,3))>0 then "هزار و " else " هزار",
+            h1=if a1=0 then "صفر" else d{Number.FromText(Text.Middle(a,1,1))},
+            h2=if Number.FromText(Text.Middle(a,1,1))=0 then "" else if Number.FromText(Text.Middle(a,2,1))=0 and Number.FromText(Text.Middle(a,3,1))=0 then "" else " و ",
+            h3=if a1=0 then "صفر" else e{Number.FromText(Text.Middle(a,2,1))},
+            h4=if Number.FromText(Text.Middle(a,2,1))=0 or Number.FromText(Text.Middle(a,2,1))=1 or Number.FromText(Text.Middle(a,3,1))=0 then "" else " و ",
+            h5=c{Number.FromText(Text.Middle(a,3,1))},
+            h6=h&h1&h2&h3&h4&h5
+        in h6,
+    y=tt(year),
+    mo=m{Number.FromText(month)-1},
+    d=tt(day),
+    result=d&" "&mo&" "&y
+
+in
+    result,
+ FunctionType = type function
+        (
+            PersianDate as 
+            (type text meta
+                [
+                Documentation.FieldCaption = "Persian date as text تاریخ شمسی با فرمت متنی",
+                Documentation.FieldDescription = "Accepting Persian date as a text including slash. این فانکشن یک تاریخ شمسی حاوی اسلش های بین آن را میپذیرد",
+                Documentation.SampleValues = {"1367/01/25"}
+                ]
+            )
+        ) as number 
+        meta
+        [
+            Documentation.Name = "fn_PersianDateToPersianTextDate",
+            Documentation.Description = "Converts Persian date to Persian text date.این فانکشن تاریخ شمسی را به حروف تبدیل می کند ",
+            Documentation.Version = " 1.0 ",
+            Documentation.Category = " Text ",
+            Documentation.Author = " Mahmoud Bani Asadi ",
+            Documentation.Source = " https://www.arshad-hesabdar.ir ",
+            Documentation.Examples = {[Description =  " see this blogpost: https://www.arshad-hesabdar.ir ",
+        Code = " fn_PersianDateToPersianTextDate(""1367/01/25"")",
+        Result = " ""بیست و پنج فروردین هزار و سیصد و شصت و هفت"" "]}       
+        ]
+in
+    Value.ReplaceType(fn_PersianDateToPersianTextDate, FunctionType)
