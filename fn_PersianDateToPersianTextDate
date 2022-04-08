@@ -21,7 +21,7 @@ let
             h2=if Number.FromText(Text.Middle(a,1,1))=0 then "" else if Number.FromText(Text.Middle(a,2,1))=0 and Number.FromText(Text.Middle(a,3,1))=0 then "" else " و ",
             h3=if a1=0 then "صفر" else e{Number.FromText(Text.Middle(a,2,1))},
             h4=if Number.FromText(Text.Middle(a,2,1))=0 or Number.FromText(Text.Middle(a,2,1))=1 or Number.FromText(Text.Middle(a,3,1))=0 then "" else " و ",
-            h5=c{Number.FromText(Text.Middle(a,3,1))},
+            h5=if Number.FromText(Text.Middle(a,2,1))<>1 then c{Number.FromText(Text.Middle(a,3,1))} else b{Number.FromText(Text.Middle(a,3,1))},
             h6=h&h1&h2&h3&h4&h5
         in h6,
     y=tt(year),
