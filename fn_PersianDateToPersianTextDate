@@ -1,5 +1,5 @@
 let
-    fn_PersianDateToPersianTextDate =
+    fn_PersianDateToText =
 (PersianDate as text)=>
 let
     DateToText=PersianDate,
@@ -44,15 +44,15 @@ in
         ) as number 
         meta
         [
-            Documentation.Name = "fn_PersianDateToPersianTextDate",
+            Documentation.Name = "fn_PersianDateToText",
             Documentation.Description = "Converts Persian date to Persian text date.این فانکشن تاریخ شمسی را به حروف تبدیل می کند ",
             Documentation.Version = " 1.0 ",
             Documentation.Category = " Text ",
             Documentation.Author = " Mahmoud Bani Asadi ",
             Documentation.Source = " https://www.arshad-hesabdar.ir ",
             Documentation.Examples = {[Description =  " see this blogpost: https://www.arshad-hesabdar.ir ",
-        Code = " fn_PersianDateToPersianTextDate(""1367/01/25"")",
+        Code = " fn_PersianDateToText(""1367/01/25"")",
         Result = " ""بیست و پنج فروردین هزار و سیصد و شصت و هفت"" "]}       
         ]
 in
-    Value.ReplaceType(fn_PersianDateToPersianTextDate, FunctionType)
+    Value.ReplaceType(fn_PersianDateToText, FunctionType)
