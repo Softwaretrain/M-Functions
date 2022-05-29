@@ -1,0 +1,53 @@
+let 
+fn =(StartDate as text, optional EndDate as text, optional IncludeEnd as logical) as record =>
+    let
+        start=StartDate,
+        end=if EndDate=null then Date.ToText(Date.From(DateTime.LocalNow()),"yyy/MM/dd","fa") else EndDate,
+        status=if IncludeEnd=null or IncludeEnd=false then 1 else 0,
+        YE=Number.From(Text.Start(end,4)),
+        YS=Number.From(Text.Start(start,4)),
+        ME=Number.From(Text.Middle(end,5,2)),
+        MS=Number.From(Text.Middle(start,5,2)),
+        DE=Number.From(Text.End(end,2)),
+        DS=Number.From(Text.End(start,2)),
+        wDays=((YE*360)+(ME*30)+DE)-((YS*360)+(MS*30)+DS),
+        Year=Number.RoundDown((wDays/360),0),
+        Month=Number.RoundDown((Number.Mod(wDays,360))/30,0),
+        DateList=List.Buffer(List.LastN({Number.From(Date.From(start,"fa"))..Number.From(Date.From(end,"fa"))},31)),
+        Days=List.Count({Number.From(Date.From(start,"fa"))..Number.From(Date.From(end,"fa"))})-1-status,
+        NTD=List.Transform(DateList,each Date.From(_)),
+        DTP=List.Transform(NTD,each Date.ToText(_,"yyy/MM/dd","fa")
+        ),
+        DTT=Table.FromList(DTP),
+        AIT=Table.Sort(DTT,{"Column1", Order.Descending}),
+        L2C=Table.TransformColumns(AIT, {{"Column1", each Text.End(Text.From(_, "en-US"), 2), type text}}),
+        LPD=List.PositionOf(L2C[Column1],Text.End(start,2))+1,
+        STR=Table.FirstN(L2C,LPD),
+        CL=try Table.AddIndexColumn(STR,"Index",1,1) otherwise 0,
+        Final=try List.Max(CL[Index])-status otherwise 0
+    in
+            [year = Text.From(Year),month = Text.From(Month),day = Text.From(Final),days=Days],
+fnType= type function(
+            StartDate as (type text meta[
+                Documentation.FieldCaption="تاریخ شروع",
+                Documentation.SampleValues={"1367/01/25"}
+                 ]),
+            optional EndDate as (type text meta[
+                Documentation.FieldCaption="تاریخ پایان",
+                Documentation.SampleValues={"1400/10/17"}                
+                 ]),
+            optional IncludeEnd as (type logical meta[
+                Documentation.FieldCaption="شامل روز پایان باشد؟",
+                Documentation.AllowedValues = {true,false}                
+            ])) as record meta[
+        Documentation.Name =  " J_Diff ",
+        Documentation.LongDescription = " Returns a <code>Record</code> with the columns include <code>Year</code> and <code>Month</code> and <code>Day</code> and <code>Days</code> ",
+        Documentation.Category = " Record ",
+        Documentation.Source = " www.arshad-hesabdar.ir ",
+        Documentation.Version = " 1.0 ",
+        Documentation.Author = " Mahmoud Bani Asadi: www.Arshad-Hesabdar.ir ",
+        Documentation.Examples = {[Description =  " see this blogpost: https://arshad-hesabdar.ir ",
+        Code = " J_Diff(""1367/01/25"",""1400/10/17"",true)",
+        Result = " [year=33,month=8,day=23,days=12321] "]}]  
+ in  
+	Value.ReplaceType(fn,fnType)
