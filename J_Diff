@@ -14,7 +14,7 @@ fn =(StartDate as text, optional EndDate as text, optional IncludeEnd as logical
         Year=Number.RoundDown((wDays/360),0),
         Month=Number.RoundDown((Number.Mod(wDays,360))/30,0),
         DateList=List.Buffer(List.LastN({Number.From(Date.From(start,"fa"))..Number.From(Date.From(end,"fa"))},31)),
-        Days=List.Count({Number.From(Date.From(start,"fa"))..Number.From(Date.From(end,"fa"))})-1-status,
+        Days=List.Count({Number.From(Date.From(start,"fa"))..Number.From(Date.From(end,"fa"))})-status,
         NTD=List.Transform(DateList,each Date.From(_)),
         DTP=List.Transform(NTD,each Date.ToText(_,"yyy/MM/dd","fa")
         ),
