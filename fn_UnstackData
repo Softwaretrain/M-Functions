@@ -1,0 +1,12 @@
+(StackedCol as list,StackedCount as number,NewNames as list,ExtraChars as list) as table =>
+let
+Result=#table(
+        NewNames,
+        List.Split(
+            List.Transform(
+                StackedCol,
+                each Text.Remove(_,ExtraChars)
+            ),StackedCount
+        ))
+
+in Result
