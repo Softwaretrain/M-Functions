@@ -1,0 +1,44 @@
+let
+	fn=(MeliNumber as text)as text=>
+let
+    a=Text.Length(MeliNumber),
+    b=List.Transform({0..8},each (10-_)*Number.From(Text.At(MeliNumber,_))),
+    c=Number.Mod(List.Sum(b),11),
+	d={29,27,23,19,17,29,27,23,19,247},
+    e=List.Transform({0..9},each d{_}*Number.From(Text.At(MeliNumber,_))),
+    f=Number.Mod(List.Sum(e)+460,11),
+    g=if f=10 then 0 else f,
+    check=Number.From(Text.End(MeliNumber,1)),
+    h=if MeliNumber="" or MeliNumber=null or Text.Select(MeliNumber,{"0".."9"})<>MeliNumber then "" 
+        else if a=10 then 
+        if c<2 and check=c or check+c=11 then 
+        "Correct Meli" else "Wrong Meli" else if a=11 then 
+        if g=check then "Correct National ID" else "Wrong National ID" else "Wrong length"
+in
+    h,
+	fnType=type function(
+				MeliNumber as (type text meta[
+					Documentation.FieldCaption="کد ملی/شناسه ملی",
+					Documentation.SampleValues={"0652259460"}
+				])
+				) as list 
+
+				meta
+		[
+			Documentation.Name="MeliCheck",
+			Documentation.Description ="کنترل صحت کد ملی یا شناسه ملی",
+			Documentation.Category = " Text ",
+       		Documentation.Source = " www.arshad-hesabdar.ir ",
+        	Documentation.Version = " 1.0 ",
+        	Documentation.Author = " Mahmoud Bani Asadi: www.Arshad-Hesabdar.ir . ",
+			Documentation.Examples=
+				{[
+						Description="<p>این تابع می تواند صحت کد ملی یا شناسه ملی وارد شده را چک کند</p>",
+						Code="MeliCheck(""0652259460"")",
+						Result="""Correct Meli"""
+					]}
+		]
+
+
+in
+	Value.ReplaceType(fn,fnType)
