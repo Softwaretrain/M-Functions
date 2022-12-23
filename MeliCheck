@@ -35,7 +35,7 @@ in
 				{[
 						Description="<p>این تابع می تواند صحت کد ملی یا شناسه ملی وارد شده را چک کند</p>",
 						Code="MeliCheck(""0652259460"")",
-						Result="""Correct Meli"""
+						Result="""Wrong Meli"""
 					]}
 		]
 
