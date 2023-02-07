@@ -1,0 +1,52 @@
+let
+  func = (InputTable as table, TopNRows as number, optional Delimiter as nullable text) as table =>
+    let
+      Delimiter = if Delimiter <> null then Delimiter else "#(lf)", 
+      // Correction: Change Table.Split to Table.SplitAt
+      ToTables = Table.SplitAt(InputTable, TopNRows), 
+      ColsNames = Table.ColumnNames(ToTables{0}), 
+      ToText = Table.TransformColumnTypes(
+        ToTables{0}, 
+        List.Transform(ColsNames, each {_, type text})
+      ), 
+      /* My alternative method for this part
+CombineText=
+List.Transform(
+Table.ToList(
+Table.Transpose(ToText),
+Combiner.CombineTextByDelimiter(Delimiter,0)),
+each Text.Trim(_)),
+*/
+      // Muneer Marzouq Solution
+      ToColumns = Table.ToColumns(ToText), 
+      CombineText = List.Transform(ToColumns, each Text.Combine(_, Delimiter)), 
+      //End of Muneer code which is different from mine
+      ToTable = Table.FromRows({CombineText}, ColsNames), 
+      Combine = Table.Combine({ToTable, ToTables{1}}), 
+      // Correction: add one step to promote combined rows as header
+      PromotedHeaders = Table.PromoteHeaders(Combine, [PromoteAllScalars = true])
+    in
+      PromotedHeaders, 
+  // Add documentation
+  documentation = [
+    Documentation.Name = " fn_CombineTopNRows ", 
+    Documentation.Description = " Returns a Table with Combining X Number of Rows. ", 
+    Documentation.LongDescription
+      = " Returns a Table with Combining X Number of Rows and Promote them as header. ", 
+    Documentation.Category = " Table ", 
+    Documentation.Source
+      = " https://www.biinsight.com/combining-x-number-of-rows-in-power-query-for-power-bi-excel-and-power-query-online/ ", 
+    Documentation.Version = " 1.0 ", 
+    Documentation.Author = " Muneer Marzouq, Mahmoud Bani Asadi, Soheil Bakhshi ", 
+    Documentation.Examples = {
+      [
+        Description
+          = " see this blogpost: https://www.biinsight.com/combining-x-number-of-rows-in-power-query-for-power-bi-excel-and-power-query-online/ ", 
+        Code
+          = " fn_CombineTopNRows(#table({""Column1"", ""Column2"", ""Column3""}, {{""TitleA"", ""TitleC"", ""Title1""}, {""TitleB"", ""TitleD"", ""Title2""}, {7, 8, 9}}), 2, "" "")", 
+        Result = " #table({""TitleA TitleB"", ""TitleC TitleD"", ""Title1 Title2""}, {{7, 8, 9}}) "
+      ]
+    }
+  ]
+in
+  Value.ReplaceType(func, Value.ReplaceMetadata(Value.Type(func), documentation))
