@@ -1,0 +1,27 @@
+//This function is write for the solution of the chllenge PQC04 in this youtube link:  https://www.youtube.com/watch?v=KW8UPneUgxg
+
+(tbl as table, filterTbl as table)as table=>
+let
+
+    addCriteriaCol = Table.AddColumn(tbl, "Filter", each 
+        List.Sum(
+                [
+                    x=Table.ColumnNames(filterTbl),
+                    y=List.Buffer({0..List.Count(x)-1}),
+                    z=List.Transform(y,
+                        (o)=> 
+                            [
+                                a=Table.SelectColumns(filterTbl,x{o}),
+                                b=Table.ToColumns(a){0},
+                                c=Record.SelectFields(_,x{o}),
+                                d=Record.FieldValues(c){0},
+                                e=Number.From(List.Contains(b,d,Comparer.OrdinalIgnoreCase))
+                            ][e])
+
+                ][z])
+            ),
+    result = Table.RemoveColumns(
+            Table.SelectRows(addCriteriaCol,
+                each List.Max(addCriteriaCol[Filter])=[Filter]),"Filter")
+in
+    result
