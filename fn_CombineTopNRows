@@ -2,31 +2,19 @@ let
   func = (InputTable as table, TopNRows as number, optional Delimiter as nullable text) as table =>
     let
       Delimiter = if Delimiter <> null then Delimiter else "#(lf)", 
-      // Correction: Change Table.Split to Table.SplitAt
       ToTables = Table.SplitAt(InputTable, TopNRows), 
-      ColsNames = Table.ColumnNames(ToTables{0}), 
-      ToText = Table.TransformColumnTypes(
-        ToTables{0}, 
-        List.Transform(ColsNames, each {_, type text})
-      ), 
-      /* My alternative method for this part
-CombineText=
-List.Transform(
-Table.ToList(
-Table.Transpose(ToText),
-Combiner.CombineTextByDelimiter(Delimiter,0)),
-each Text.Trim(_)),
-*/
-      // Muneer Marzouq Solution
-      ToColumns = Table.ToColumns(ToText), 
-      CombineText = List.Transform(ToColumns, each Text.Combine(_, Delimiter)), 
-      //End of Muneer code which is different from mine
-      ToTable = Table.FromRows({CombineText}, ColsNames), 
-      Combine = Table.Combine({ToTable, ToTables{1}}), 
-      // Correction: add one step to promote combined rows as header
-      PromotedHeaders = Table.PromoteHeaders(Combine, [PromoteAllScalars = true])
-    in
-      PromotedHeaders, 
+      OldName = Table.ColumnNames(InputTable), 
+      Transpose = Table.Transpose(ToTables{0}),
+    TrColN = Table.ColumnNames(Transpose),
+    ToText = Table.TransformColumnTypes(
+        Transpose, 
+        List.Transform(TrColN, each {_, type text})
+      ),
+    FillDown = Table.FillDown(ToText,TrColN), 
+    ToColumns = Table.ToRows(FillDown), 
+    CombineText = List.Transform(ToColumns, each Text.Combine(_, Delimiter))
+in
+    CombineText, 
   // Add documentation
   documentation = [
     Documentation.Name = " fn_CombineTopNRows ", 
