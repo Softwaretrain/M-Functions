@@ -1,7 +1,7 @@
 let
     fn_PersianToEnglishNumber =
   /************************Function body************************/
-(input as text) as text=>
+(input) =>
 let
     Translation = List.Buffer(List.Zip(
                 {List.Transform(
@@ -10,8 +10,7 @@ let
                 List.Transform(
                     {48..57,44,48..57},
                     each Character.FromNumber(_))})),
-    Output=try List.Accumulate(Translation,input,(x,y)=>Text.Replace(x,y{0},y{1})) otherwise input
-
+    Output=List.Accumulate(Translation,input,(x,y)=>Text.Replace(x,y{0},y{1}))
 in
     Output,
   /************************Function Documentation************************/
