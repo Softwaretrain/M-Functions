@@ -5,16 +5,18 @@ let
       ToTables = Table.SplitAt(InputTable, TopNRows), 
       OldName = Table.ColumnNames(InputTable), 
       Transpose = Table.Transpose(ToTables{0}),
-    TrColN = Table.ColumnNames(Transpose),
-    ToText = Table.TransformColumnTypes(
+      TrColN = Table.ColumnNames(Transpose),
+      ToText = Table.TransformColumnTypes(
         Transpose, 
         List.Transform(TrColN, each {_, type text})
       ),
     FillDown = Table.FillDown(ToText,TrColN), 
     ToColumns = Table.ToRows(FillDown), 
-    CombineText = List.Transform(ToColumns, each Text.Combine(_, Delimiter))
+    NewName = List.Transform(ToColumns, each Text.Combine(_, Delimiter)),
+    CombineColN = List.Zip({OldName,NewName}),
+    RenColName = Table.RenameColumns(ToTables{1},CombineColN)
 in
-    CombineText, 
+    RenColName, 
   // Add documentation
   documentation = [
     Documentation.Name = " fn_CombineTopNRows ", 
