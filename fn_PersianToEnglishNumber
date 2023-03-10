@@ -1,7 +1,7 @@
 let
     fn_PersianToEnglishNumber =
   /************************Function body************************/
-(input as nullable text) as text=>
+(input) as text=>
 let
     Translation = List.Buffer(List.Zip(
                 {List.Transform(
