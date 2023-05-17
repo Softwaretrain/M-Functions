@@ -47,7 +47,7 @@ FunctionType = type function
                 [
                 Documentation.FieldCaption = "Region code to create dimDate",
                 Documentation.FieldDescription = "Put a region code like ""fa-IR"" as text",
-                Documentation.SampleValues = {"fa-IR"}
+                Documentation.AllowedValues = {"fa-IR", "en-US", "en-GB", "fr-FR", "de-DE", "es-ES", "it-IT", "zh-CN", "ar-SA", "he-IL", "hi-IN", "ja-JP", "th-TH"}
                 ]
             )
         ) as table 
