@@ -1,7 +1,7 @@
 let
-  func = (InputTable as table, TopNRows as number, optional Delimiter as nullable text) as table =>
+  func = (InputTable as table, TopNRows as number, optional Del as nullable text) as table =>
     let
-      Delimiter = if Delimiter <> null then Delimiter else "#(lf)", 
+      Delimiter = if Del <> null then Del else "#(lf)", 
       ToTables = Table.SplitAt(InputTable, TopNRows), 
       OldName = Table.ColumnNames(InputTable), 
       Transpose = Table.Transpose(ToTables{0}),
