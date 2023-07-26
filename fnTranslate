@@ -1,0 +1,35 @@
+//This function translates the input text from one language to another using the Google Translate API.
+
+let 
+fn =(txt as text,from as text, to as text) as text => 
+
+let
+    api = "https://translate.googleapis.com/translate_a/single?client=gtx&dt=t&sl=" & from & "&tl=" & to & "&q=" & txt,
+    Json = Text.Combine(List.Transform(Json.Document(Web.Contents(api)){0}?, List.First),"#(lf)")
+in
+    Json,
+
+fnType= type function(
+            txt as (type text meta[
+                Documentation.FieldCaption="Input Text",
+                Documentation.SampleValues={"Hello, How are you?"}
+                 ]),
+            from as (type text meta[
+                Documentation.FieldCaption="Source Language",
+                Documentation.SampleValues={"en"}                
+                 ]),
+            to as (type text meta[
+                Documentation.FieldCaption="Target Language",
+                Documentation.SampleValues={"fa"}                 
+            ])) as record meta[
+        Documentation.Name =  "Translate Text",
+        Documentation.LongDescription = "This function translates the input text from one language to another using the Google Translate API.",
+        Documentation.Category = "Text Translation",
+        Documentation.Source = "www.arshad-hesabdar.ir",
+        Documentation.Version = "1.0",
+        Documentation.Author = "Mahmoud Bani Asadi",
+        Documentation.Examples = {[Description =  "Refer to this blogpost for more information: https://arshad-hesabdar.ir",
+        Code = "fnTranslate(""Hello, How are you?"",""en"",""fa"")",
+        Result = "سلام، حال شما چطور ؟"]}] 
+ in  
+	Value.ReplaceType(fn,fnType)
