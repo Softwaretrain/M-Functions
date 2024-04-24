@@ -30,7 +30,10 @@ in
         meta
         [
             Documentation.Name = "fn_PersianToEnglishNumber",
-            Documentation.Description = "Converts persian numbers to english numbers.این فانکشن اعداد فارسی را به معادل انگلیسی آنها تبدیل میکند ",
+            Documentation.Description = "Converts persian numbers to english numbers.این فانکشن اعداد فارسی را به معادل انگلیسی آنها تبدیل میکند 
+                                    <p></p>
+                <li><b>Author: </b> Mahmoud Bani Asadi</li>
+                <li><b>YouTube: </b> www.Youtube.com/@SoftwareTrain</li>",
             Documentation.Version = " 1.0 ",
             Documentation.Category = " Text ",
             Documentation.Author = " Mahmoud Bani Asadi ",
