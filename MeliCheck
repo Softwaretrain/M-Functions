@@ -26,7 +26,10 @@ in
 				meta
 		[
 			Documentation.Name="MeliCheck",
-			Documentation.Description ="کنترل صحت کد ملی یا شناسه ملی",
+			Documentation.Description ="کنترل صحت کد ملی یا شناسه ملی
+					                <p></p>
+                <li><b>Author: </b> Mahmoud Bani Asadi</li>
+                <li><b>YouTube: </b> www.Youtube.com/@SoftwareTrain</li>",
 			Documentation.Category = " Text ",
        		Documentation.Source = " www.arshad-hesabdar.ir ",
         	Documentation.Version = " 1.0 ",
