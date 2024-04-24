@@ -23,7 +23,10 @@ fnType= type function(
                 Documentation.SampleValues={"fa"}                 
             ])) as record meta[
         Documentation.Name =  "Translate Text",
-        Documentation.LongDescription = "This function translates the input text from one language to another using the Google Translate API.",
+        Documentation.LongDescription = "This function translates the input text from one language to another using the Google Translate API.
+		                <p></p>
+                <li><b>Author: </b> Mahmoud Bani Asadi</li>
+                <li><b>YouTube: </b> www.Youtube.com/@SoftwareTrain</li>",
         Documentation.Category = "Text Translation",
         Documentation.Source = "www.arshad-hesabdar.ir",
         Documentation.Version = "1.0",
