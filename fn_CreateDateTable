@@ -23,9 +23,43 @@ let fn_CreateDateTable = (Start as any, optional End as any, optional Culture as
         InsertDayName = Table.AddColumn(InsertDayWeek, "DayOfWeekName", each Date.ToText([Date], "dddd", Culture), type text),
         DayofYear = Table.AddColumn(InsertDayName, "ShamsiDayOfYear", each if Date.DayOfYear([Date])>=80 then Date.DayOfYear([Date])-79 else Date.DayOfYear([Date])+286,Int64.Type),
         InsertWeekEnding = Table.AddColumn(DayofYear, "WeekEnding", each Date.ToText(Date.EndOfWeek([Date],Day.Saturday),"yyy/MM/dd",Culture)),
-        RenameColumns = Table.RenameColumns(InsertWeekEnding,{{"Date", "تاریخ میلادی"}, {"LocalDate", "تاریخ شمسی"}, {"DateNumber", "تاریخ عددی"}, {"YYY/MM", "سال و ماه"}, {"Year", "سال"}, {"QuarterOfYear", "شماره فصل"}, {"Season", "فصل"}, {"MonthOfYear", "شماره ماه"}, {"DayOfMonth", "روز"}, {"MonthName", "نام ماه"}, {"MonthInCalendar", "نام ماه و سال"}, {"QuarterInCalendar", "فصل و سال"}, {"DayInWeek", "روز هفته"}, {"DayOfWeekName", "نام روز هفته"}, {"ShamsiDayOfYear", "شماره روز سال"}, {"WeekEnding", "تاریخ پایان هفته"}})
+        RenameColumns = Table.RenameColumns(InsertWeekEnding,{{"Date", "تاریخ میلادی"}, {"LocalDate", "تاریخ شمسی"}, {"DateNumber", "تاریخ عددی"}, {"YYY/MM", "سال و ماه"}, {"Year", "سال"}, {"QuarterOfYear", "شماره فصل"}, {"Season", "فصل"}, {"MonthOfYear", "شماره ماه"}, {"DayOfMonth", "روز"}, {"MonthName", "نام ماه"}, {"MonthInCalendar", "نام ماه و سال"}, {"QuarterInCalendar", "فصل و سال"}, {"DayInWeek", "روز هفته"}, {"DayOfWeekName", "نام روز هفته"}, {"ShamsiDayOfYear", "شماره روز سال"}, {"WeekEnding", "تاریخ پایان هفته"}}),
+
+        fnPersianDate=(PersianDate as text)=>
+let
+    DateToText=PersianDate,
+    year=Text.Start(DateToText,Text.PositionOf(DateToText,"/")),
+    month=Text.Middle(DateToText,Text.PositionOf(DateToText,"/")+1,2),
+    day=Text.End(DateToText,2),
+    m={"فروردین","اردیبهشت","خرداد","تیر","مرداد","شهریور","مهر","آبان","آذر","دی","بهمن","اسفند"},
+
+    tt=(NumberToText as text)=>
+        let
+            a=Text.PadStart(NumberToText,4,"0"),
+            a1=Number.FromText(a),
+            b={"ده","یازده","دوازده","سیزده","چهارده","پانزده","شانزده","هفده","هجده","نوزده"},
+            c={"","یک","دو","سه","چهار","پنج","شش","هفت","هشت","نه"},
+            d={"","صد","دویست","سیصد","چهارصد","پانصد","ششصد","هفتصد","هشتصد","نهصد"},
+            e={"","","بیست","سی","چهل","پنجاه","شصت","هفتاد","هشتاد","نود"},
+            h=if Number.FromText(Text.Middle(a,0,1))=0 then "" else if Number.FromText(Text.End(a,3))>0 then "هزار و " else " هزار",
+            h1=if a1=0 then "صفر" else d{Number.FromText(Text.Middle(a,1,1))},
+            h2=if Number.FromText(Text.Middle(a,1,1))=0 then "" else if Number.FromText(Text.Middle(a,2,1))=0 and Number.FromText(Text.Middle(a,3,1))=0 then "" else " و ",
+            h3=if a1=0 then "صفر" else e{Number.FromText(Text.Middle(a,2,1))},
+            h4=if Number.FromText(Text.Middle(a,2,1))=0 or Number.FromText(Text.Middle(a,2,1))=1 or Number.FromText(Text.Middle(a,3,1))=0 then "" else " و ",
+            h5=if Number.FromText(Text.Middle(a,2,1))<>1 then c{Number.FromText(Text.Middle(a,3,1))} else b{Number.FromText(Text.Middle(a,3,1))},
+            h6=h&h1&h2&h3&h4&h5
+        in h6,
+    y=tt(year),
+    mo=m{Number.FromText(month)-1},
+    d=tt(day),
+    result=d&" "&mo&" "&y
+in
+    result,
+            AddPersianDate= Table.AddColumn(RenameColumns,"تاریخ شمسی به حروف", each fnPersianDate([تاریخ شمسی]))
+
+
     in
-        RenameColumns,
+        AddPersianDate,
 FunctionType = type function
         (
             Start as 
