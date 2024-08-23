@@ -1,8 +1,8 @@
-let fn_CreateDateTable = (Start as date, optional End as date, optional Culture as nullable text) as table =>
+let fn_CreateDateTable = (Start as any, optional End as any, optional Culture as nullable text) as table =>
     let
         Culture=if Culture=null then "fa-IR" else Culture,
-        StartDate= Date.FromText(Date.ToText(Start,"yyy/MM/dd","en-EN"),Culture),
-        EndDate= if End=null then Date.FromText(Date.ToText(DateTime.Date(DateTime.LocalNow()),"yyy/MM/dd","en-EN"),Culture) else Date.FromText(Date.ToText(End,"yyy/MM/dd","en-EN"),Culture),
+        StartDate= Date.FromText(try Date.ToText(Start,"yyy/MM/dd","en-EN") otherwise Start ,Culture),
+        EndDate= if End=null then Date.FromText(Date.ToText(DateTime.Date(DateTime.LocalNow()),"yyy/MM/dd","en-EN"),Culture) else Date.FromText(try Date.ToText(End,"yyy/MM/dd","en-EN") otherwise End,Culture),
         DayCount = Duration.Days(Duration.From(EndDate - StartDate))+1,
         Source = List.Dates(StartDate,DayCount,#duration(1,0,0,0)),
         TableFromList = Table.FromList(Source, Splitter.SplitByNothing()),
@@ -13,17 +13,19 @@ let fn_CreateDateTable = (Start as date, optional End as date, optional Culture 
         #"YYY/MM" = Table.AddColumn(DateNumber, "YYY/MM", each Text.Start([LocalDate],7),type text),
         InsertYear = Table.AddColumn(#"YYY/MM", "Year", each Number.FromText(Date.ToText([Date],"yyy",Culture))),
         InsertQuarter = Table.AddColumn(InsertYear, "QuarterOfYear", each Number.RoundUp(Number.FromText( Date.ToText([Date],"MM",Culture))/3,0)),
-        InsertMonth = Table.AddColumn(InsertQuarter, "MonthOfYear", each Number.FromText(Date.ToText([Date],"MM",Culture))),
+        InsertSeason = Table.AddColumn(InsertQuarter, "Season", each {"بهار","تابستان","پاییز","زمستان"}{[QuarterOfYear]-1}),
+        InsertMonth = Table.AddColumn(InsertSeason, "MonthOfYear", each Number.FromText(Date.ToText([Date],"MM",Culture))),
         InsertDay = Table.AddColumn(InsertMonth, "DayOfMonth", each Number.FromText(Date.ToText([Date],"dd",Culture))),
         InsertMonthName = Table.AddColumn(InsertDay, "MonthName", each Date.ToText([Date], "MMMM", Culture), type text),
         InsertCalendarMonth = Table.AddColumn(InsertMonthName, "MonthInCalendar", each Date.ToText([Date],"MMM",Culture)&" "&Date.ToText([Date],"yyy",Culture)),
-        InsertCalendarQtr = Table.AddColumn(InsertCalendarMonth, "QuarterInCalendar", each "Q" & Number.ToText([QuarterOfYear]) & "-" & Number.ToText([Year])),
+        InsertCalendarQtr = Table.AddColumn(InsertCalendarMonth, "QuarterInCalendar", each {"بهار","تابستان","پاییز","زمستان"}{[QuarterOfYear]-1} & "-" & Number.ToText([Year])),
         InsertDayWeek = Table.AddColumn(InsertCalendarQtr, "DayInWeek", each (Date.DayOfWeek([Date],Day.Saturday)+1)),
         InsertDayName = Table.AddColumn(InsertDayWeek, "DayOfWeekName", each Date.ToText([Date], "dddd", Culture), type text),
         DayofYear = Table.AddColumn(InsertDayName, "ShamsiDayOfYear", each if Date.DayOfYear([Date])>=80 then Date.DayOfYear([Date])-79 else Date.DayOfYear([Date])+286,Int64.Type),
-        InsertWeekEnding = Table.AddColumn(DayofYear, "WeekEnding", each Date.ToText(Date.EndOfWeek([Date],Day.Saturday),"yyy/MM/dd",Culture))
+        InsertWeekEnding = Table.AddColumn(DayofYear, "WeekEnding", each Date.ToText(Date.EndOfWeek([Date],Day.Saturday),"yyy/MM/dd",Culture)),
+        RenameColumns = Table.RenameColumns(InsertWeekEnding,{{"Date", "تاریخ میلادی"}, {"LocalDate", "تاریخ شمسی"}, {"DateNumber", "تاریخ عددی"}, {"YYY/MM", "سال و ماه"}, {"Year", "سال"}, {"QuarterOfYear", "شماره فصل"}, {"Season", "فصل"}, {"MonthOfYear", "شماره ماه"}, {"DayOfMonth", "روز"}, {"MonthName", "نام ماه"}, {"MonthInCalendar", "نام ماه و سال"}, {"QuarterInCalendar", "فصل و سال"}, {"DayInWeek", "روز هفته"}, {"DayOfWeekName", "نام روز هفته"}, {"ShamsiDayOfYear", "شماره روز سال"}, {"WeekEnding", "تاریخ پایان هفته"}})
     in
-        InsertWeekEnding,
+        RenameColumns,
 FunctionType = type function
         (
             Start as 
