@@ -1,0 +1,75 @@
+Sub CreateDimDateWithMFunction()
+    Dim WebRequest As Object
+    Dim URL As String
+    Dim MFunctionName As String
+    Dim ResponseText As String
+    Dim StartDate As String
+    Dim EndDate As String
+    Dim MCode As String
+    Dim FunctionQuery As WorkbookQuery
+    Dim DimDateQuery As WorkbookQuery
+
+    ' Define the URL to the M function
+    URL = "https://raw.githubusercontent.com/Softwaretrain/M-Functions/main/fn_CreateDateTable"
+    MFunctionName = "fn_CreateDateTable"
+
+    ' Ask the user for the start and end dates
+    StartDate = InputBox("Enter the start date (YYYY/MM/DD):", "Start Date")
+    EndDate = InputBox("Enter the end date (YYYY/MM/DD):", "End Date")
+
+    ' Validate the inputs (basic validation for empty input)
+    If StartDate = "" Or EndDate = "" Then
+        MsgBox "Start date and end date are required.", vbExclamation
+        Exit Sub
+    End If
+
+    ' Create a web request object to fetch the content from the URL
+    Set WebRequest = CreateObject("MSXML2.XMLHTTP")
+    WebRequest.Open "GET", URL, False
+    WebRequest.Send
+
+    ' Get the response text (the M function code)
+    ResponseText = WebRequest.ResponseText
+
+    ' Add the M function as a query
+    On Error Resume Next
+    Set FunctionQuery = ThisWorkbook.Queries(MFunctionName)
+    On Error GoTo 0
+    
+    If FunctionQuery Is Nothing Then
+        ' If the function does not exist, add it
+        Set FunctionQuery = ThisWorkbook.Queries.Add(MFunctionName, ResponseText)
+    End If
+
+    ' Create the M code for the DimDate query using the function
+    MCode = "let" & vbCrLf & _
+            "    StartDate = """ & StartDate & """, " & vbCrLf & _
+            "    EndDate = """ & EndDate & """, " & vbCrLf & _
+            "    DimDate = " & MFunctionName & "(StartDate, EndDate)" & vbCrLf & _
+            "in" & vbCrLf & _
+            "    DimDate"
+
+
+    ' Add the DimDate query to the workbook
+    On Error Resume Next
+    Set DimDateQuery = ThisWorkbook.Queries("DimDate")
+    On Error GoTo 0
+    
+    If Not DimDateQuery Is Nothing Then
+        ' If the query already exists, delete it first to avoid conflicts
+        ThisWorkbook.Queries("DimDate").Delete
+    End If
+    
+    ' Create the new DimDate query
+    Set DimDateQuery = ThisWorkbook.Queries.Add("DimDate", MCode)
+
+
+
+    ' Confirm the creation of the DimDate table
+    MsgBox "The 'DimDate' table has been successfully created from " & StartDate & " to " & EndDate & ".", vbInformation
+
+End Sub
+
+
+
+
