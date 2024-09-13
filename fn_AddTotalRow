@@ -1,0 +1,32 @@
+(tbl as table) =>
+  let
+    _type = Table.TransformColumnTypes(
+      tbl,
+      Table.ToRows(
+        Table.ReplaceValue(
+          Table.Distinct(Table.UnpivotOtherColumns(tbl, {}, "Attribute", "Value"), {"Attribute"}),
+          each [Value],
+          each Value.Type([Value]),
+          Replacer.ReplaceValue,
+          {"Value"}
+        )
+      )
+    ),
+    total = _type
+      & Table.PromoteHeaders(
+        Table.Transpose(
+          Table.ReplaceValue(
+            Table.SelectColumns(
+              Table.AddColumn(Table.Profile(_type), "Sum", each [Average] * [Count], type number),
+              {"Column", "Sum"}
+            ),
+            each [Sum],
+            each if [Column] = Table.ColumnNames(_type){0} then "Total" else [Sum],
+            Replacer.ReplaceValue,
+            {"Sum"}
+          )
+        ),
+        [PromoteAllScalars = true]
+      )
+  in
+    total
