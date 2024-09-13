@@ -1,5 +1,6 @@
 (tbl as table) =>
   let
+    // Determine and apply appropriate data types to columns based on the first row of the table
     _type = Table.TransformColumnTypes(
       tbl,
       Table.ToRows(
@@ -12,15 +13,18 @@
         )
       )
     ),
+// Calculate totals and create a summary row
     total = _type
       & Table.PromoteHeaders(
         Table.Transpose(
           Table.ReplaceValue(
             Table.SelectColumns(
+                    // Calculate the sum for each column
               Table.AddColumn(Table.Profile(_type), "Sum", each [Average] * [Count], type number),
               {"Column", "Sum"}
             ),
             each [Sum],
+                // Replace the first column's sum with "Total"
             each if [Column] = Table.ColumnNames(_type){0} then "Total" else [Sum],
             Replacer.ReplaceValue,
             {"Sum"}
