@@ -1,0 +1,8 @@
+//fnTableToBinaryText
+(tbl as table) as text=>
+Binary.ToText(Binary.Compress(Json.FromValue(Table.ToRows(Table.DemoteHeaders(tbl))),Compression.Deflate))
+
+
+//fnBinaryTextToTable
+(txt as text) as table=>
+Table.PromoteHeaders(Table.FromRows(Json.Document(Binary.Decompress(Binary.FromText(txt, BinaryEncoding.Base64), Compression.Deflate))))
