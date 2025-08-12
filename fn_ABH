@@ -1,0 +1,131 @@
+let
+    fn_ABH =
+  /************************Function body************************/
+(n as number) as text =>
+let
+        _check = if n = null then "" else n,
+        signText = if _check < 0 then "منفی " else "",
+        numAbs = Number.Abs(_check),
+
+        // بخش صحیح
+        intPart = Number.RoundDown(numAbs),
+        intText = Text.PadStart(Text.From(intPart), 15, "0"),
+
+        // آرایه‌های متن
+        Hundreds = {"", "صد", "دویست", "سیصد", "چهارصد", "پانصد", "ششصد", "هفتصد", "هشتصد", "نهصد"},
+        Tens = {"", "", "بیست", "سی", "چهل", "پنجاه", "شصت", "هفتاد", "هشتاد", "نود"},
+        Teens = {"ده","یازده","دوازده","سیزده","چهارده","پانزده","شانزده","هفده","هجده","نوزده"},
+        Ones = {"", "یک", "دو", "سه", "چهار", "پنج", "شش", "هفت", "هشت", "نه"},
+        Units = {" تریلیارد", " میلیارد", " میلیون", " هزار", ""},
+
+        // تابع تبدیل سه رقم به متن
+        toWords = (triplet as text) =>
+            let
+                h = Hundreds{Number.From(Text.Start(triplet,1))},
+                tDigit = Number.From(Text.Middle(triplet,1,1)),
+                oDigit = Number.From(Text.End(triplet,1)),
+                part =
+                    if tDigit <> 1 then
+                        Text.Combine(
+                            List.RemoveNulls({
+                                if h <> "" then h else null,
+                                if Tens{tDigit} <> "" then Tens{tDigit} else null,
+                                if Ones{oDigit} <> "" then Ones{oDigit} else null
+                            }),
+                            " و "
+                        )
+                    else
+                        Text.Combine(
+                            List.RemoveNulls({
+                                if h <> "" then h else null,
+                                Teens{oDigit}
+                            }),
+                            " و "
+                        )
+            in
+                part,
+
+        // تقسیم به ۵ بخش سه‌رقمی
+        triplets = { Text.Start(intText,3), Text.Middle(intText,3,3), Text.Middle(intText,6,3), Text.Middle(intText,9,3), Text.End(intText,3) },
+        intParts =
+            List.Transform(
+                List.Zip({triplets, Units}),
+                each if _{0} <> "000" then toWords(_{0}) & _{1} else null
+            ),
+        intFull = if List.RemoveNulls(intParts) = {} then "صفر" else Text.Combine(List.RemoveNulls(intParts), " و "),
+
+        // بخش اعشاری
+        decRaw = Number.Round(numAbs - intPart, 6),
+        decText =
+            if decRaw = 0 then
+                ""
+            else
+                let
+                    decStr = Text.End(Text.PadEnd(Text.From(decRaw), 8, "0"), 6),
+                    decLen = Text.Length(Text.TrimEnd(decStr,"0")),
+                    decPad = Text.PadStart(Text.Start(decStr,decLen), 6, "0"),
+                    decTrip1 = Text.Start(decPad,3),
+                    decTrip2 = Text.End(decPad,3),
+                    decParts =
+                        List.RemoveNulls({
+                            if decTrip1 <> "000" then toWords(decTrip1) & " هزار" else null,
+                            if decTrip2 <> "000" then toWords(decTrip2) else null
+                        }),
+                    decUnit = {"دهم","صدم","هزارم","ده هزارم","صد هزارم","میلیونم"}{decLen-1},
+                    decFull = Text.Combine(decParts," و ") & " " & decUnit
+                in
+                    decFull,
+
+        // نتیجه نهایی
+        result =
+            if decText <> "" then
+                if intFull = "صفر" and numAbs < 1 then
+                    signText & decText
+                else
+                    signText & intFull & " ممیز " & decText
+            else
+                signText & intFull,
+        re = if not Value.Is(_check, type number) then "" else result
+    in
+        re,
+  /************************Function Documentation************************/
+    
+ FunctionType = type function
+        (
+            input as 
+            (type text meta
+                [
+                Documentation.FieldCaption = "Number عدد",
+                Documentation.FieldDescription = "The numeric value (integer or decimal) to convert to Persian text. مقدار عددی (صحیح یا اعشاری) برای تبدیل به متن فارسی.",
+                Documentation.SampleValues = {1234567890.005}
+                ]
+            )
+        ) as text 
+        meta
+        [
+            Documentation.Name = "fn_ABH",
+            Documentation.Description = "Converts a numeric value to its Persian text representation. این تابع یک مقدار عددی را به حروف فارسی آن تبدیل می‌کند.",
+            //Documentation.LongDescription = "This function converts a numeric value (integer or decimal) into its full Persian text representation. It correctly handles negative numbers by prefixing 'منفی', separates the integer part into named segments (تریلیارد، میلیارد، میلیون، هزار), and converts the fractional part into fractional units (دهم، صدم، هزارم, etc.). The function supports up to 15 digits in the integer part and up to 6 digits in the fractional part.",
+            Documentation.Category = " Text ",
+            Documentation.Version = " 1.0 ",
+            Documentation.Author = " Mahmoud Bani Asadi ",
+            Documentation.Source = " https://www.arshad-hesabdar.ir ",
+            Documentation.Examples = {
+                [
+                    Description = "Converts a negative integer to Persian text.",
+                    Code = "fn_ABH(-548654)",
+                    Result = "منفی پانصد و چهل و هشت هزار و ششصد و پنجاه و چهار"
+                ],
+                [
+                    Description = "Converts a decimal number with a zero integer part.",
+                    Code = "fn_ABH(0.54)",
+                    Result = "پنجاه و چهار صدم"
+                ],
+                [
+                    Description = "Converts a large number with integer and decimal parts.",
+                    Code = "fn_ABH(1234567890.005)",
+                    Result = "یک میلیارد و دویست و سی و چهار میلیون و پانصد و شصت و هفت هزار و هشتصد و نود ممیز پنج هزارم"
+                ]}
+        ]
+in
+    Value.ReplaceType(fn_ABH, FunctionType)
