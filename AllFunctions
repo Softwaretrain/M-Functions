@@ -14,6 +14,8 @@ let
     AltSubCat = Table.AddColumn(AltCat, "Alt Subcategory", each Text.AfterDelimiter([Function name], "."), type text),
     CombinedCat = Table.AddColumn(AltSubCat, "Combined Category", each if [Category] = null or [Category] = "" then [Alt Category] else [Category]),
     CombinedSubCat = Table.AddColumn(CombinedCat, "Combined Subcategory", each if [Subcategory] = null or [Subcategory] = "" then [Alt Subcategory] else [Subcategory]),
-    RemoveChar = Table.TransformColumns(CombinedSubCat,{{"Long Description", each List.Accumulate({"<code>","</code>","<ul>","</ul>","<li>","</li>"}, _, (txt, word) => Text.Replace(txt, word, ""))}})
+    RemoveChar = Table.TransformColumns(CombinedSubCat,{{"Long Description", each List.Accumulate({"<code>","</code>","<ul>","</ul>","<li>","</li>"}, _, (txt, word) => Text.Replace(txt, word, ""))}}),
+    PQHow = Table.AddColumn(RemoveChar, "PowerQuery.How", each "https://powerquery.how/"&Text.Replace([Function name],".","-")),
+    Microsoft = Table.AddColumn(PQHow, "MicrosoftPQ", each "https://learn.microsoft.com/en-us/powerquery-m/"&Text.Replace([Function name],".","-"))
 in
-    RemoveChar
+    Microsoft
