@@ -1,6 +1,8 @@
 let
-    Source = Table.FromRecords(List.Transform(Text.Split("aggregation|date-and-time|filter|financial|info|information|logical|math-and-trig|other|parent-and-child|relationship|statistical|table-manipulation|text|time-intelligence","|"),each [Group=_,Data=Web.Page(Web.Contents( "https://learn.microsoft.com/en-us/dax/"&_&"-functions-dax")){[Source="Table"]}[Data]])),
+    Source = Table.FromRecords(List.Transform(Text.Split("aggregation|date-and-time|filter|financial|information|logical|math-and-trig|other|parent-and-child|relationship|statistical|table-manipulation|text|time-intelligence","|"),each [Group=_,Data=Web.Page(Web.Contents( "https://learn.microsoft.com/en-us/dax/"&_&"-functions-dax")){[Source="Table"]}[Data]])),
     Custom = Table.TransformColumns(Source,{{"Group",each Text.Replace(Text.Proper(_),"-"," "), type text},{"Data",each Table.TransformColumnNames(_,(x)=> Text.Replace(Text.Replace(x,"[",""),"]",""))}}),
-    Expand = Table.ExpandTableColumn(Custom, "Data", {"Function", "Description"}, {"Function", "Description"})
+    Expand = Table.ExpandTableColumn(Custom, "Data", {"Function", "Description"}, {"Function", "Description"}),
+    LinkToMSFT = Table.AddColumn(Expand, "Link to MSFT", each "https://learn.microsoft.com/en-us/dax/"&Text.Replace([Function],".","-")&"-function-dax"),
+    LindToDaxGuide = Table.AddColumn(LinkToMSFT, "Lind to Dax.Guide", each "https://dax.guide/"&Text.Replace([Function],".","-"))
 in
-    Expand
+    LindToDaxGuide
