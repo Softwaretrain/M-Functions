@@ -1,0 +1,7 @@
+let
+    Source = Web.Page(Web.Contents("https://support.office.com/en-us/article/excel-functions-alphabetical-b3944572-255d-4efb-bb96-c6d90033e188")){[Source="Table"]}[Data],
+    SplitByColon = Table.SplitColumn(Source, "Type and description", Splitter.SplitTextByDelimiter(":", QuoteStyle.Csv), {"Group", "Description"}),
+    SplitByLF = Table.SplitColumn(SplitByColon, "Function name", Splitter.SplitTextByDelimiter(" #(cr)#(lf)", QuoteStyle.Csv), {"Function Name", "Version"}),
+    Trim = Table.TransformColumns(SplitByLF,{{"Description", Text.Trim, type text}})
+in
+    Trim
