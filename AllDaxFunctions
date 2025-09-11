@@ -1,3 +1,4 @@
+//Created by Mahmoud Bani Asadi (https://www.linkedin.com/in/softwaretrain/)
 let
     Source = Table.FromRecords(List.Transform(Text.Split("aggregation|date-and-time|filter|financial|information|logical|math-and-trig|other|parent-and-child|relationship|statistical|table-manipulation|text|time-intelligence","|"),each [Group=_,Data=Web.Page(Web.Contents( "https://learn.microsoft.com/en-us/dax/"&_&"-functions-dax")){[Source="Table"]}[Data]])),
     Custom = Table.TransformColumns(Source,{{"Group",each Text.Replace(Text.Proper(_),"-"," "), type text},{"Data",each Table.TransformColumnNames(_,(x)=> Text.Replace(Text.Replace(x,"[",""),"]",""))}}),
