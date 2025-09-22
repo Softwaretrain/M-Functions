@@ -1,0 +1,68 @@
+let
+  fnName =
+  (varX as text, optional varY as text) =>
+ 
+  let
+  Source = varX & varY
+  in
+  Source,
+ 
+  /************************Function Documentation************************/
+  
+  FunctionType = type function
+  (
+  // Documentation for the first argument (required)
+        varX as (type text meta
+                            [
+                                // The name of the field shown in the function dialog
+                                Documentation.FieldCaption = "Required Text",
+                                // A brief description of what this argument does
+                                Documentation.FieldDescription = "The first text string to be merged.",
+                                // Example values to help the user understand what to input
+                                Documentation.SampleValues = {"Hello", "First Name"},
+                                // A boolean to indicate if the input should be multi-line
+                                Formatting.IsMultiLine = false,
+                                // A boolean to indicate if the input should be formatted as code
+                                Formatting.IsCode = false
+                            ]
+                ),
+            // Documentation for the second argument (optional)
+        optional varY as (type text meta
+                            [
+                                Documentation.FieldCaption = "Optional Text",
+                                Documentation.FieldDescription = "An optional text string to be appended to the first.",
+                                // Allowed values if the user needs to select from a predefined list
+                                Documentation.AllowedValues = {"World", "Last Name"}
+                         ]
+                      )
+        ) as text
+meta
+        [
+            // The official name of your function
+            Documentation.Name = "fn_MergeTexts",
+            // A detailed description of what the function does. HTML tags are supported.
+            Documentation.Description = "This function merges two text strings together. The first input is required, and the second is optional."
+                                            & "<p></p>"
+                                            & "<li><b>Author: </b> Mahmoud Bani Asadi</li>"
+                                            & "<li><b>YouTube: </b> www.Youtube.com/@SoftwareTrain</li>"
+                                            & "<li><b>Source: </b> https://www.arshad-hesabdar.ir</li>",
+            // The version number of your function
+            Documentation.Version = "1.0",
+            // The category where the function will appear in Power Query
+            Documentation.Category = "Text.Modification",
+            // Example use cases with code and expected results
+            Documentation.Examples = {
+                                        [
+                                            Description = "Merges two strings.",
+                                            Code = "fn_MergeTexts(""Hello "", ""World"")",
+                                            Result = "Hello World"
+                                        ],
+                                        [
+                                            Description = "Returns the first string since the second is omitted.",
+                                            Code = "fn_MergeTexts(""Hello"")",
+                                            Result = "Hello"
+                                        ]
+                                    }
+        ]
+ in
+  Value.ReplaceType(fnName, FunctionType)
