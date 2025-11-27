@@ -1,0 +1,85 @@
+let
+    // ------------------------------------------------------------------
+    // 1. THE FUNCTION LOGIC
+    // ------------------------------------------------------------------
+    fnImpl = (LeftTableName as text, RightTableName as text, JoinCols as list) as table =>
+        let
+            // Helper: Loads table and adds index to handle duplicates (Bag Reconciliation)
+            LoadAndIndex = (tableName as text) as table =>
+                let 
+                    Source = Excel.CurrentWorkbook(){[Name=tableName]}[Content],
+                    Grouped = Table.Group(Source, JoinCols, {{"Partition", each Table.AddIndexColumn(_, "OccurrenceIndex", 1, 1, Int64.Type)}}),
+                    Expanded = Table.Combine(Grouped[Partition])
+                in 
+                    Expanded,
+
+            // Load data
+            TableLeft = LoadAndIndex(LeftTableName),
+            TableRight = LoadAndIndex(RightTableName),
+
+            // Combine and tag source
+            Combined = Table.Combine({
+                Table.AddColumn(TableLeft, "Source", each LeftTableName, type text),
+                Table.AddColumn(TableRight, "Source", each RightTableName, type text)
+            }),
+
+            // Find Mismatches (Rows that appear in one table but not the other, accounting for duplicates)
+            CheckCols = JoinCols & {"OccurrenceIndex"},
+            GroupRows = Table.Group(Combined, CheckCols, {{"Rows", each _, type table}, {"Count", Table.RowCount, Int64.Type}}),
+            
+            // Filter: Keep only items where Count=1 (meaning it had no match in the other table)
+            SelectMismatches = Table.SelectRows(GroupRows, each [Count] = 1),
+            Result = Table.Combine(SelectMismatches[Rows]),
+            CleanResult = Table.RemoveColumns(Result, {"OccurrenceIndex"})
+        in
+            CleanResult,
+
+    // ------------------------------------------------------------------
+    // 2. THE DOCUMENTATION TYPE
+    // ------------------------------------------------------------------
+    fnType = type function (
+        
+        // Argument 1: Left Table Name
+        LeftTableName as (type text meta [
+            Documentation.FieldCaption = "First Table Name",
+            Documentation.FieldDescription = "The name of the first Excel Table to compare.",
+            Documentation.SampleValues = {"Table_First", "Data2023"}
+        ]),
+        
+        // Argument 2: Right Table Name
+        RightTableName as (type text meta [
+            Documentation.FieldCaption = "Second Table Name",
+            Documentation.FieldDescription = "The name of the second Excel Table to compare against.",
+            Documentation.SampleValues = {"Table_Second", "Data2024"}
+        ]),
+
+        // Argument 3: Join Columns
+        JoinCols as (type list meta [
+            Documentation.FieldCaption = "Matching Columns",
+            Documentation.FieldDescription = "A list of column headers to match rows on (e.g., ID, Date).",
+            Documentation.SampleValues = { {"EmployeeID"}, {"InvoiceID", "Date"} }
+        ])
+    )
+    as table meta [
+        // Function Level Metadata
+        Documentation.Name = "fn_ReconcileTables",
+        Documentation.Description = "Reconciles two tables to find unmatched rows. <br>" &
+                                    "It handles duplicate keys correctly (Bag Reconciliation). " &
+                                    "Returns a table of rows that exist in one side but not the other." &
+                                    "<p></p>" &
+                                    "<li><b>Author: </b> Mahmoud Bani Asadi</li>" &
+                                    "<li><b>Social Media ID: </b> @SoftwareTrain</li>",
+        Documentation.Category = "Table.Membership",
+        Documentation.Examples = {
+            [
+                Description = "Compare 'SalesJan' and 'SalesFeb' matching on 'InvoiceID'.",
+                Code = "fn_ReconcileTables(""SalesJan"", ""SalesFeb"", {""InvoiceID""})",
+                Result = "Table with mismatched invoices."
+            ]
+        }
+    ]
+in
+    // ------------------------------------------------------------------
+    // 3. APPLY TYPE TO LOGIC
+    // ------------------------------------------------------------------
+    Value.ReplaceType(fnImpl, fnType)
